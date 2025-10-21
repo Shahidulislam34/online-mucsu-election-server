@@ -20,7 +20,7 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET || (JWT_SECRET + "_refresh");
 // 🧩 Middleware
 // ==============================
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"], // your frontend origins
+  origin: ["http://localhost:5173"], // your frontend origins
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
