@@ -145,12 +145,94 @@ function generateCode() {
 
 // Register
 
+// app.post("/api/auth/register", async (req, res) => {
+//   try {
+//     const { email, password, fullName, role } = req.body;
+//     if (!email || !password) return res.status(400).json({ ok: false, error: "Missing fields" });
+
+//     const exists = await User.findOne({ email });
+//     if (exists) return res.status(400).json({ ok: false, error: "Email already registered" });
+
+//     const passwordHash = await bcrypt.hash(password, 10);
+
+//     const allowedRoles = ["admin", "voter", "candidate"];
+//     const roleValue = allowedRoles.includes(role) ? role : "voter";
+
+//     const user = new User({
+//       email,
+//       passwordHash,
+//       fullName,
+//       // disable verification: mark as verified immediately and do not store verificationCode
+//       isVerified: true,
+//       role: roleValue,
+//     });
+//     await user.save();
+
+//     // If registering as a candidate, create a Candidate record (optional fields from body)
+//     if (roleValue === "candidate") {
+//       const cand = new Candidate({
+//         name: fullName || "",
+//         party: req.body.party || "",
+//         symbol: req.body.symbol || "",
+//       });
+//       await cand.save();
+//     }
+
+//     // create tokens
+//     const accessToken = jwt.sign(
+//       { id: user._id, email: user.email, role: user.role },
+//       JWT_SECRET,
+//       { expiresIn: "40m" }
+//     );
+//     const refreshToken = jwt.sign(
+//       { id: user._id },
+//       REFRESH_SECRET,
+//       { expiresIn: "30d" }
+//     );
+//     user.refreshTokens.push(refreshToken);
+//     await user.save();
+
+//     return res.status(201).json({
+//       ok: true,
+//       message: "Registration successful.",
+//       data: {
+//         user: {
+//           id: user._id,
+//           email: user.email,
+//           fullName: user.fullName,
+//           role: user.role,
+//           isVerified: user.isVerified,
+//         },
+//         accessToken,
+//         refreshToken,
+//       },
+//     });
+//   } 
+//   catch (err) {
+//     console.error("Register error:", err);
+//     return res.status(500).json({ ok: false, error: "Server error" });
+//   }
+// });
+
+
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { email, password, fullName, role } = req.body;
     if (!email || !password) return res.status(400).json({ ok: false, error: "Missing fields" });
 
-    const exists = await User.findOne({ email });
+    // only allow MBSTU IT student emails:
+    // it21|22|23|24|25 + 3-digit number from 001 to 060 -> e.g. it21001@mbstu.ac.bd
+    const emailLower = String(email).trim().toLowerCase();
+    const mbstuItRegex = /^it(21|22|23|24|25)(00[1-9]|0[1-5][0-9]|060)@mbstu\.ac\.bd$/;
+    if (!mbstuItRegex.test(emailLower)) {
+      return res.status(403).json({
+        ok: false,
+        error:
+          "Registration restricted to MBSTU IT students. Allowed emails: it21***@mbstu.ac.bd to it25***@mbstu.ac.bd (001-060).",
+      });
+    }
+
+    const exists = await User.findOne({ email: emailLower });
     if (exists) return res.status(400).json({ ok: false, error: "Email already registered" });
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -159,7 +241,7 @@ app.post("/api/auth/register", async (req, res) => {
     const roleValue = allowedRoles.includes(role) ? role : "voter";
 
     const user = new User({
-      email,
+      email: emailLower,
       passwordHash,
       fullName,
       // disable verification: mark as verified immediately and do not store verificationCode
@@ -213,7 +295,6 @@ app.post("/api/auth/register", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
-
 // Login
 app.post("/api/auth/login", async (req, res) => {
   try {
