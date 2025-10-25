@@ -20,7 +20,7 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET || (JWT_SECRET + "_refresh");
 // 🧩 Middleware
 // ==============================
 app.use(cors({
-  origin: ["http://localhost:5173","https://online-mucsu-election-client-mknramf8j.vercel.app","https://online-mucsu-election-client.vercel.app"], // your frontend origins
+  origin: ["http://localhost:5173","https://online-mucsu-election-client-mknramf8j.vercel.app","https://online-mucsu-election-client.vercel.app", "https://online-mucsu-election-client.vercel.app/results", "https://online-mucsu-election-client.vercel.app/voting-page"], // your frontend origins
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
